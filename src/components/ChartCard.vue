@@ -28,7 +28,7 @@ function renderData() {
 
 onMounted(() => {
   chart = createChart(chartContainer.value, {
-    autoSize: false,
+    autoSize: true,
     layout: {
       background: { color: '#f8fafc' },
       textColor: '#475569',
@@ -67,8 +67,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex flex-1 flex-col rounded-xl bg-white p-4">
+  <section class="flex flex-col rounded-xl bg-white p-4 md:flex-1">
     <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ title }}</h2>
-    <div ref="chartContainer" class="min-h-0 flex-1"></div>
+    <div ref="chartContainer" class="h-64 min-h-0 md:h-auto md:flex-1"></div>
   </section>
 </template>
