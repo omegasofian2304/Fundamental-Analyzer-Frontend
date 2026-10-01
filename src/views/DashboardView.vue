@@ -20,7 +20,14 @@ const tickers = ref([
 
 ])
 
-const selectedSymbol = ref(tickers.value[0].symbol)
+const selectedSymbol = ref(tickers.value[0]?.symbol ?? null)
+const drawerOpen = ref(false)
+const hasTickers = computed(() => tickers.value.length > 0)
+
+function selectTicker(symbol) {
+  selectedSymbol.value = symbol
+  drawerOpen.value = false
+}
 
 // TODO: replace with real data from serviceFetchFinnhub.js once it's implemented.
 function mockSeries(symbol, base) {
@@ -41,22 +48,52 @@ function mockSeries(symbol, base) {
   })
 }
 
-const healthScoreData = computed(() => mockSeries(`${selectedSymbol.value}-score`, 70))
-const sharePriceData = computed(() => mockSeries(`${selectedSymbol.value}-price`, 180))
+const healthScoreData = computed(() =>
+    selectedSymbol.value ? mockSeries(`${selectedSymbol.value}-score`, 70) : []
+)
+const sharePriceData = computed(() =>
+    selectedSymbol.value ? mockSeries(`${selectedSymbol.value}-price`, 180) : []
+)
 </script>
 
 <template>
-  <div class="flex h-screen gap-4 bg-slate-900 p-4">
-    <TickerList v-model="selectedSymbol" :tickers="tickers" />
+  <div class="drawer md:drawer-open bg-slate-900">
+    <input id="ticker-drawer" v-model="drawerOpen" type="checkbox" class="drawer-toggle" />
 
-    <div class="flex flex-1 flex-col gap-4">
-      <ChartCard
-          :title="`${selectedSymbol} : health score`"
-          :data="healthScoreData"
-      />
-      <ChartCard
-          :title="`${selectedSymbol} : share price`"
-          :data="sharePriceData"
+    <div class="drawer-content flex min-h-screen flex-col">
+      <div class="navbar gap-2 bg-slate-900 px-4 md:hidden">
+        <label for="ticker-drawer" aria-label="Ouvrir la liste des tickers" class="btn btn-square btn-ghost text-slate-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </label>
+        <span class="text-lg font-semibold text-slate-100">{{ selectedSymbol ?? 'Aucun ticker' }}</span>
+      </div>
+
+      <div v-if="hasTickers && selectedSymbol" class="flex flex-col gap-4 p-4 md:flex-1">
+        <ChartCard
+            :title="`${selectedSymbol} : health score`"
+            :data="healthScoreData"
+        />
+        <ChartCard
+            :title="`${selectedSymbol} : share price`"
+            :data="sharePriceData"
+        />
+      </div>
+      <div v-else class="flex flex-1 items-center justify-center p-4">
+        <p class="text-center text-sm font-medium text-slate-400">
+          Aucun ticker disponible. Impossible de charger les données.
+        </p>
+      </div>
+    </div>
+
+    <div class="drawer-side z-20">
+      <label for="ticker-drawer" aria-label="Fermer la liste des tickers" class="drawer-overlay"></label>
+      <TickerList
+          :model-value="selectedSymbol"
+          :tickers="tickers"
+          class="w-72 md:my-4 md:ml-4 md:w-64"
+          @update:model-value="selectTicker"
       />
     </div>
   </div>

@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { createChart, BaselineSeries } from 'lightweight-charts'
 
 const props = defineProps({
@@ -9,7 +9,7 @@ const props = defineProps({
   },
   data: {
     type: Array,
-    required: true,
+    default: () => [],
   },
 })
 
@@ -18,7 +18,10 @@ let chart = null
 let series = null
 let resizeObserver = null
 
+const hasData = computed(() => Array.isArray(props.data) && props.data.length > 0)
+
 function renderData() {
+  if (!hasData.value) return
   series?.applyOptions({
     baseValue: { type: 'price', price: props.data[0]?.value ?? 0 },
   })
@@ -28,7 +31,7 @@ function renderData() {
 
 onMounted(() => {
   chart = createChart(chartContainer.value, {
-    autoSize: false,
+    autoSize: true,
     layout: {
       background: { color: '#f8fafc' },
       textColor: '#475569',
@@ -67,8 +70,16 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex flex-1 flex-col rounded-xl bg-white p-4">
+  <section class="flex flex-col rounded-xl bg-white p-4 md:flex-1">
     <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ title }}</h2>
-    <div ref="chartContainer" class="min-h-0 flex-1"></div>
+    <div class="relative h-64 min-h-0 md:h-auto md:flex-1">
+      <div ref="chartContainer" class="h-full w-full"></div>
+      <div
+          v-if="!hasData"
+          class="absolute inset-0 flex items-center justify-center rounded-lg bg-white/90 px-4 text-center text-sm font-medium text-slate-500"
+      >
+        Aucune donnée disponible pour le moment.
+      </div>
+    </div>
   </section>
 </template>
