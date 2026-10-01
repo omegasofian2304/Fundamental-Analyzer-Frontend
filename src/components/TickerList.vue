@@ -38,7 +38,7 @@ function formatChange(changePercent) {
 </script>
 
 <template>
-  <aside class="flex h-full w-64 flex-col gap-2 rounded-xl bg-slate-800 p-3">
+  <aside class="flex h-full flex-col gap-2 rounded-xl bg-slate-800 p-3">
     <label class="flex items-center gap-2 rounded-full bg-slate-700/60 px-3 py-2 text-sm text-slate-300">
       <span class="h-3 w-3 rounded-full border border-slate-400"></span>
       <input
