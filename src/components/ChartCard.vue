@@ -81,6 +81,5 @@ onBeforeUnmount(() => {
         Aucune donnée disponible pour le moment.
       </div>
     </div>
-    <div ref="chartContainer" class="h-64 min-h-0 md:h-auto md:flex-1"></div>
   </section>
 </template>
