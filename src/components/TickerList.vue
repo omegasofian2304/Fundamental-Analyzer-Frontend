@@ -49,7 +49,7 @@ function formatChange(changePercent) {
       />
     </label>
 
-    <ul class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+    <ul v-if="filteredTickers.length" class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
       <li v-for="ticker in filteredTickers" :key="ticker.symbol">
         <button
             type="button"
@@ -69,5 +69,8 @@ function formatChange(changePercent) {
         </button>
       </li>
     </ul>
+    <p v-else class="flex-1 px-3 py-6 text-center text-sm text-slate-400">
+      {{ tickers.length ? `Aucun ticker ne correspond à « ${search} ».` : 'Aucun ticker disponible pour le moment.' }}
+    </p>
   </aside>
 </template>

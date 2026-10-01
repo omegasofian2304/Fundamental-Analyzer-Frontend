@@ -20,8 +20,9 @@ const tickers = ref([
 
 ])
 
-const selectedSymbol = ref(tickers.value[0].symbol)
+const selectedSymbol = ref(tickers.value[0]?.symbol ?? null)
 const drawerOpen = ref(false)
+const hasTickers = computed(() => tickers.value.length > 0)
 
 function selectTicker(symbol) {
   selectedSymbol.value = symbol
@@ -47,8 +48,12 @@ function mockSeries(symbol, base) {
   })
 }
 
-const healthScoreData = computed(() => mockSeries(`${selectedSymbol.value}-score`, 70))
-const sharePriceData = computed(() => mockSeries(`${selectedSymbol.value}-price`, 180))
+const healthScoreData = computed(() =>
+    selectedSymbol.value ? mockSeries(`${selectedSymbol.value}-score`, 70) : []
+)
+const sharePriceData = computed(() =>
+    selectedSymbol.value ? mockSeries(`${selectedSymbol.value}-price`, 180) : []
+)
 </script>
 
 <template>
@@ -74,6 +79,11 @@ const sharePriceData = computed(() => mockSeries(`${selectedSymbol.value}-price`
             :title="`${selectedSymbol} : share price`"
             :data="sharePriceData"
         />
+      </div>
+      <div v-else class="flex flex-1 items-center justify-center p-4">
+        <p class="text-center text-sm font-medium text-slate-400">
+          Aucun ticker disponible. Impossible de charger les données.
+        </p>
       </div>
     </div>
 
