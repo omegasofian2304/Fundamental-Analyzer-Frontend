@@ -31,10 +31,6 @@ function selectTicker(symbol) {
   emit('update:modelValue', symbol)
 }
 
-function formatChange(changePercent) {
-  const sign = changePercent > 0 ? '+' : ''
-  return `${sign}${changePercent.toFixed(2)}%`
-}
 </script>
 
 <template>
@@ -60,12 +56,7 @@ function formatChange(changePercent) {
           <span>
             <span class="block text-sm font-semibold">{{ ticker.symbol }}</span>
           </span>
-          <span
-              class="text-sm font-medium"
-              :class="ticker.changePercent >= 0 ? 'text-emerald-500' : 'text-red-500'"
-          >
-            {{ formatChange(ticker.changePercent) }}
-          </span>
+
         </button>
       </li>
     </ul>

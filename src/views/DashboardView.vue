@@ -4,19 +4,19 @@ import TickerList from '@/components/TickerList.vue'
 import ChartCard from '@/components/ChartCard.vue'
 
 const tickers = ref([
-  { symbol: 'AAPL', changePercent: 1.24 },
-  { symbol: 'TSLA', changePercent: -2.10 },
-  { symbol: 'MSFT', changePercent: 0.58 },
-  { symbol: 'GOOGL', changePercent: 0.92 },
-  { symbol: 'AMZN', changePercent: -0.34 },
-  { symbol: 'NVDA', changePercent: 3.47 },
-  { symbol: 'BLAQ', changePercent: 3.37 },
-  { symbol: 'POLF', changePercent: 3.67 },
-  { symbol: 'HAKK', changePercent: 8.47 },
-  { symbol: 'MALO', changePercent: -3.47 },
-  { symbol: 'KAID', changePercent: 6.47 },
-  { symbol: 'IKII', changePercent: 3.47 },
-  { symbol: 'GIBA', changePercent: 0.47 },
+  { symbol: 'AAPL'},
+  { symbol: 'TSLA'},
+  { symbol: 'MSFT'},
+  { symbol: 'GOOGL'},
+  { symbol: 'AMZN'},
+  { symbol: 'NVDA'},
+  { symbol: 'BLAQ'},
+  { symbol: 'POLF'},
+  { symbol: 'HAKK'},
+  { symbol: 'MALO'},
+  { symbol: 'KAID'},
+  { symbol: 'IKII'},
+  { symbol: 'GIBA'},
 
 ])
 
