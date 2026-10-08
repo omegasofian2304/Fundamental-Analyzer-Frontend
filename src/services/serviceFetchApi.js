@@ -1,5 +1,5 @@
-// TODO: replace with the real API base URL once the backend is ready.
-const API_BASE_URL = "/score/{ticker}"
+// Server address only: the routes (/companies, /score/AAPL, /price/AAPL) are added by the services.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 // Mock responses: '/score/AAPL' is answered by src/mocks/score/AAPL.json
