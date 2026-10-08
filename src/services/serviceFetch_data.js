@@ -7,8 +7,8 @@ function byTime(a, b) {
 // Expected response: { ticker: 'AAPL', score: 72.45, label: 'sous-évalué', date: '2026-10-08' }
 // An array of these objects (score history) is also accepted.
 export async function fetchHealthScore(symbol, options) {
-  const response = await request(`/score/${encodeURIComponent(symbol)}`, options)
-  const entries = (Array.isArray(response) ? response : [response]).filter((entry) => entry?.date)
+  const response = await request(`/history/${encodeURIComponent(symbol)}`, options)
+  const entries = (Array.isArray(response.history) ? response.history : []).filter((entry) => entry?.date);
 
   const sorted = entries
       .map((entry) => ({ time: entry.date, value: Number(entry.score), label: entry.label }))
