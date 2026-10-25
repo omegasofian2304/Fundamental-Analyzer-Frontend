@@ -11,12 +11,31 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  error: {
+    type: String,
+    default: '',
+  },
+  badge: {
+    type: String,
+    default: '',
+  },
 })
 
 const chartContainer = ref(null)
 let chart = null
 let series = null
 let resizeObserver = null
+
+const badgeClass = computed(() => {
+  const label = props.badge.toLowerCase()
+  if (label.includes('sous')) return 'badge-success'
+  if (label.includes('sur')) return 'badge-error'
+  return 'badge-ghost'
+})
 
 const hasData = computed(() => Array.isArray(props.data) && props.data.length > 0)
 
@@ -71,14 +90,20 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="flex flex-col rounded-xl bg-white p-4 md:flex-1">
-    <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ title }}</h2>
+    <div class="mb-3 flex items-center gap-2">
+      <h2 class="text-sm font-semibold text-slate-800">{{ title }}</h2>
+      <span v-if="badge" class="badge badge-sm" :class="badgeClass">{{ badge }}</span>
+    </div>
     <div class="relative h-64 min-h-0 md:h-auto md:flex-1">
       <div ref="chartContainer" class="h-full w-full"></div>
       <div
-          v-if="!hasData"
-          class="absolute inset-0 flex items-center justify-center rounded-lg bg-white/90 px-4 text-center text-sm font-medium text-slate-500"
+          v-if="loading || error || !hasData"
+          class="absolute inset-0 flex items-center justify-center rounded-lg bg-white/90 px-4 text-center text-sm font-medium"
+          :class="error && !loading ? 'text-red-500' : 'text-slate-500'"
       >
-        Aucune donnée disponible pour le moment.
+        <span v-if="loading" class="loading loading-spinner loading-md"></span>
+        <template v-else-if="error">{{ error }}</template>
+        <template v-else>Aucune donnée disponible pour le moment.</template>
       </div>
     </div>
   </section>

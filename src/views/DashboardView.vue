@@ -1,59 +1,88 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import TickerList from '@/components/TickerList.vue'
 import ChartCard from '@/components/ChartCard.vue'
+import { fetchTickers } from '@/services/serviceFetchTickers.js'
+import { fetchHealthScore, fetchSharePrice } from '@/services/serviceFetch_data.js'
 
-const tickers = ref([
-  { symbol: 'AAPL'},
-  { symbol: 'TSLA'},
-  { symbol: 'MSFT'},
-  { symbol: 'GOOGL'},
-  { symbol: 'AMZN'},
-  { symbol: 'NVDA'},
-  { symbol: 'BLAQ'},
-  { symbol: 'POLF'},
-  { symbol: 'HAKK'},
-  { symbol: 'MALO'},
-  { symbol: 'KAID'},
-  { symbol: 'IKII'},
-  { symbol: 'GIBA'},
+const tickers = ref([])
+const tickersLoading = ref(true)
 
-])
-
-const selectedSymbol = ref(tickers.value[0]?.symbol ?? null)
+const selectedSymbol = ref(null)
 const drawerOpen = ref(false)
 const hasTickers = computed(() => tickers.value.length > 0)
+
+// Each chart has its own state so one failing route doesn't hide the other chart.
+function createChartState() {
+  return reactive({ data: [], loading: false, error: '' })
+}
+
+const healthScore = createChartState()
+const healthScoreLabel = ref('')
+const sharePrice = createChartState()
+let dataController = null
 
 function selectTicker(symbol) {
   selectedSymbol.value = symbol
   drawerOpen.value = false
 }
 
-// TODO: replace with real data from serviceFetchFinnhub.js once it's implemented.
-function mockSeries(symbol, base) {
-  let seed = [...symbol].reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  const random = () => {
-    seed = (seed * 9301 + 49297) % 233280
-    return seed / 233280
+async function loadTickers() {
+  tickersLoading.value = true
+  try {
+    tickers.value = await fetchTickers()
+  } catch (error) {
+    console.error('Failed to load tickers:', error)
+    tickers.value = []
+  } finally {
+    tickersLoading.value = false
   }
+  selectedSymbol.value = tickers.value[0]?.symbol ?? null
+}
 
-  let value = base
-  const today = new Date()
+async function loadChart(state, symbol, signal, fetcher) {
+  state.loading = true
+  try {
+    await fetcher()
+  } catch (error) {
+    if (error.name === 'AbortError') return
+    console.error(`Failed to load data for ${symbol}:`, error)
+    state.error = error.status === 404
+        ? `Le ticker « ${symbol} » n'existe pas.`
+        : 'Impossible de charger les données.'
+  } finally {
+    if (!signal.aborted) state.loading = false
+  }
+}
 
-  return Array.from({ length: 30 }, (_, i) => {
-    value += (random() - 0.5) * base * 0.05
-    const date = new Date(today)
-    date.setDate(date.getDate() - (29 - i))
-    return { time: date.toISOString().slice(0, 10), value: Number(value.toFixed(2)) }
+function loadTickerData(symbol) {
+  // Cancel the previous requests so a slow response can't overwrite the current ticker's data.
+  dataController?.abort()
+  for (const state of [healthScore, sharePrice]) {
+    state.data = []
+    state.error = ''
+    state.loading = false
+  }
+  healthScoreLabel.value = ''
+  if (!symbol) return
+
+  const controller = new AbortController()
+  dataController = controller
+  const { signal } = controller
+
+  loadChart(healthScore, symbol, signal, async () => {
+    const { data, label } = await fetchHealthScore(symbol, { signal })
+    healthScore.data = data
+    healthScoreLabel.value = label
+  })
+  loadChart(sharePrice, symbol, signal, async () => {
+    sharePrice.data = await fetchSharePrice(symbol, { signal })
   })
 }
 
-const healthScoreData = computed(() =>
-    selectedSymbol.value ? mockSeries(`${selectedSymbol.value}-score`, 70) : []
-)
-const sharePriceData = computed(() =>
-    selectedSymbol.value ? mockSeries(`${selectedSymbol.value}-price`, 180) : []
-)
+watch(selectedSymbol, loadTickerData)
+onMounted(loadTickers)
+onBeforeUnmount(() => dataController?.abort())
 </script>
 
 <template>
@@ -70,14 +99,22 @@ const sharePriceData = computed(() =>
         <span class="text-lg font-semibold text-slate-100">{{ selectedSymbol }}</span>
       </div>
 
-      <div v-if="hasTickers && selectedSymbol" class="flex flex-col gap-4 p-4 md:flex-1">
+      <div v-if="tickersLoading" class="flex flex-1 items-center justify-center p-4">
+        <span class="loading loading-spinner loading-lg text-slate-400"></span>
+      </div>
+      <div v-else-if="hasTickers && selectedSymbol" class="flex flex-col gap-4 p-4 md:flex-1">
         <ChartCard
             :title="`${selectedSymbol} : health score`"
-            :data="healthScoreData"
+            :badge="healthScoreLabel"
+            :data="healthScore.data"
+            :loading="healthScore.loading"
+            :error="healthScore.error"
         />
         <ChartCard
             :title="`${selectedSymbol} : share price`"
-            :data="sharePriceData"
+            :data="sharePrice.data"
+            :loading="sharePrice.loading"
+            :error="sharePrice.error"
         />
       </div>
       <div v-else class="flex flex-1 items-center justify-center p-4">

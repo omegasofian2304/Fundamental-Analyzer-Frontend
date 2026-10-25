@@ -22,8 +22,8 @@ const filteredTickers = computed(() => {
 
   return props.tickers.filter(
       (ticker) =>
-          ticker.symbol.toLowerCase().includes(query)
-
+          ticker.symbol.toLowerCase().includes(query) ||
+          ticker.name?.toLowerCase().includes(query)
   )
 })
 
@@ -55,6 +55,13 @@ function selectTicker(symbol) {
         >
           <span>
             <span class="block text-sm font-semibold">{{ ticker.symbol }}</span>
+            <span
+                v-if="ticker.name"
+                class="block text-xs"
+                :class="ticker.symbol === modelValue ? 'text-slate-500' : 'text-slate-400'"
+            >
+              {{ ticker.name }}
+            </span>
           </span>
 
         </button>
